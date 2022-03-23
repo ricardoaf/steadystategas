@@ -27,10 +27,10 @@ unit{3} = struct('type', 'outlet_pressure', 'conn', [13 24], 'value', 40);
 unit{4} = struct('type', 'outlet_pressure', 'conn', [16 25], 'value', 40);
 
 % convergence tolerance
-tol = 0.01;
+tol = 1e-6;
 
 %--------------------------------------------------------------------------
 
 [pressure, Q, f, nite, err] = steadyStateGas ...
-    (conn, diam, len, load, unit, 'panhandleA', tol);
+    (conn, load, unit, @panhandleA, struct('L',len,'D',diam), tol);
 

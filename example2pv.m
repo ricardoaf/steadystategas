@@ -17,14 +17,15 @@ load = [0 20 20 0 0 0 0 15 300 45]' * 1000;
 % unit data
 unit = {};
 unit{1} = struct('type', 'source', 'conn', [0 1], 'value', 50);
-unit{2} = struct('type', 'pressure_valve', 'conn', [4 5], 'value', 45);
-unit{3} = struct('type', 'pressure_valve', 'conn', [6 7], 'value', 44);
+unit{2} = struct('type', 'pressure_valve', 'conn', [4 5], 'value', 35);
+unit{3} = struct('type', 'pressure_valve', 'conn', [6 7], 'value', 100);
 
 
 % convergence tolerance
-tol = 0.1;
+tol = 1e-6;
 
 %--------------------------------------------------------------------------
 
 [pressure, Q, f, nite, err] = steadyStateGas ...
-    (conn, diam, len, load, unit, 'panhandleA', tol);
+    (conn, load, unit, @panhandleA, struct('L',len,'D',diam), tol);
+

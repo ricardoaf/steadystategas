@@ -26,4 +26,4 @@ tol = 1e-6;
 %--------------------------------------------------------------------------
 
 [pressure, Q, f, nite, err] = steadyStateGas ...
-    (conn, diam, len, load, unit, 'panhandleA', tol);
+    (conn, load, unit, @panhandleA, struct('L',len,'D',diam), tol);

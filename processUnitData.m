@@ -1,4 +1,4 @@
-function [K, unit_c, units, network] = processUnitData (n, unit, p_exp)
+function [K, unit_c, units, network] = processUnitData (n, unit)
 
 % init
 u = length(unit);
@@ -7,24 +7,29 @@ unit_c = zeros(u, 4);
 
 % filter by unit type
 for i = 1:u
-    type = unit{i}.type;
-    conn = unit{i}.conn;
-    val = unit{i}.value;
     
     % set connectivities
-    unit_conn(i,:) = conn;
+    unit_conn(i,:) = unit{i}.conn;
     
-    switch type
+    switch unit{i}.type
         case {'source', 'outlet_pressure'}
-            unit_c(i,:) = [0 1 0 val^p_exp];
+            unit_c(i,:) = [0 1 0 unit{i}.value];
+            
         case 'inlet_pressure'
-            unit_c(i,:) = [1 0 0 val^p_exp];
+            unit_c(i,:) = [1 0 0 unit{i}.value];
+            
         case 'pressure_ratio'
-            unit_c(i,:) = [val^p_exp -1 0 0];
+            unit_c(i,:) = [unit{i}.value -1 0 0];
+            
         case 'flow'
-            unit_c(i,:) = [0 0 1 val];
+            unit_c(i,:) = [0 0 1 unit{i}.value];
+            
         case 'pressure_valve'
             unit_c(i,:) = [1 -1 0 0];
+            
+        case 'flow_valve' % not working
+            unit_c(i,:) = [0 0 1 -eps];
+            
         otherwise
             disp('Unknown type');
     end
