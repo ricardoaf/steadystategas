@@ -19,11 +19,12 @@ unit = {};
 unit{1} = struct('type', 'source', 'conn', [0 1], 'value', 50);
 unit{2} = struct('type', 'pressure_ratio', 'conn', [4 5], 'value', 1.2);
 % 6-7 connection removed (flow valve)
+% => works for lb = 1e-3;
 
 % convergence tolerance
 tol = 1e-6;
 
 %--------------------------------------------------------------------------
 
-[pressure, Q, f, nite, err] = steadyStateGas ...
+[pressure, L, Q, f, alpha, flowProps, nite, err] = steadyStateGas ...
     (conn, load, unit, @panhandleA, struct('L',len,'D',diam), tol);

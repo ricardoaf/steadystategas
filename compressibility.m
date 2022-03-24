@@ -44,7 +44,7 @@ load aga8d_data.mat A B C K G Q F S W U MW EI KI GI QI FI SI WI EIJ UIJ KIJ GIJ
 m = length(P);
 Z = ones(size(P));
 parfor k = 1:m
-    DCAGA(X);
+    DCAGA(X(k,:));
     Z(k) = DZOFPT(P(k),T);
     
     % % Molar mass (M)

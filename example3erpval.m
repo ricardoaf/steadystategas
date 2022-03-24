@@ -102,7 +102,7 @@ param.L(rem_pipe) = [];
 %--------------------------------------------------------------------------
 
 % call solver
-[pressure, L, Q, f, nite, err] = steadyStateGas ...
+[pressure, L, Q, f, alpha, flowProps, nite, err] = steadyStateGas ...
     (conn, load, unit, flow_eqn, param, tol);
 
 % revert units from solver

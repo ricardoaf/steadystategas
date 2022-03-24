@@ -1,4 +1,4 @@
-function [pressure, L, Q, f, nite, err] = steadyStateGas ...
+function [pressure, L, Q, f, alpha, flowProps, nite, err] = steadyStateGas ...
     (conn, load, unit, flow_eqn, param, tol)
 % steadyStateGas
 % Osiadacz A.J. (1988) Method of steady-state simulation of a gas network
@@ -15,8 +15,10 @@ for j = 1:m, A(conn(j,:),j) = [-1; +1]; end
 unit = adjustPressure('convert', flow_eqn, unit);
 
 % process unit data
-[K, unit_c, units, network] = processUnitData(n, unit);
+[K, unit_c, units, network, alpha, nonetc, X, erpunit, erpconn] = ...
+    processUnitData(n, unit, param);
 [C1, C2, C3, d] = processUnitCoeff (n, unit, unit_c, network);
+X_h = repmat(X(1,:), m, 1);
 
 % inlet / outlet
 KI = K(network, :); KO = K(units, :);
@@ -28,12 +30,12 @@ Q = min(load(load>0))*ones(m,1);
 err = tol+1; nite = 0; pressure = zeros(n,1);
 lb = 1e-6;
 
-while err > tol
+while err > tol && nite < 1000
     nite = nite + 1;
-    % fprintf('nite %d\n', nite);
+%     fprintf('nite %d\n', nite);
     
     % Linearization of pipe flow equation
-    invLbd = diag(1./flow_eqn('Lbd', pressure(conn), Q, param, nite));
+    invLbd = diag(1./flow_eqn('Lbd', pressure(conn), Q, X_h, param, nite));
     G = A * invLbd * A';
     
     Gn = G(network, network);
@@ -52,21 +54,24 @@ while err > tol
     R1 = -LO + TmpG*LI; R2 = d + TmpC*LI;
     
     Pf = [D11 D12; D21 D22]\[R1; R2];
-    P = Pf(1:u); f = Pf(u+1:2*u);
+    P = Pf(1:u); f = Pf(u+1:2*u);    
     Ps = -invU*(invL*(LI+Gh*P+KI*f));
     
     pressure(network) = Ps; pressure(units) = P;
-    Qnew = flow_eqn('Q', pressure(conn), Q, param, nite);
+    [Qnew, flowProps] = flow_eqn('Q', pressure(conn), Q, X_h, param, nite);
     
     err = norm(Qnew-Q);
     Q = Qnew;
     
     % assert pressure valves
-    unit_c = processPressureValve (pressure, unit, unit_c);
+    unit_c = processPressureValve (pressure, unit, unit_c, f);
     [C1, C2, C3, d] = processUnitCoeff (n, unit, unit_c, network);
+    
+    % update gas composition fraction
+    [alpha, X_h] = updateComposition ...
+        (alpha, X, A, Q, f, nonetc, conn, erpunit, erpconn, tol);
 end
 L = A*Q - K*f;
 
 % revert pressure values
 [~, pressure] = adjustPressure('revert', flow_eqn, unit, pressure);
-fprintf('nite: %d\n', nite);
