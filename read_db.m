@@ -5,10 +5,10 @@ conn = sqlite(dbpath, 'connect');
 
 % nodes
 nodes_data = fetch(conn, 'select * from nodes');
-topology = cell2mat(nodes_data(:,1));
+% topology = cell2mat(nodes_data(:,1));
 mdl.node_id = nodes_data(:,2);
 mdl.node_desc = nodes_data(:,3);
-node_role = nodes_data(:,4);
+% node_role = nodes_data(:,4);
 mdl.x = cell2mat(nodes_data(:,6));
 mdl.y = cell2mat(nodes_data(:,5));
 nn = length(mdl.x);
@@ -59,15 +59,16 @@ mat_data = fetch(conn, 'select * from materials');
 mat_id = mat_data(:,1);
 mat_roughness = cell2mat(mat_data(:,3));
 mat_diameter = cell2mat(mat_data(:,5));
+mat_eff = cell2mat(mat_data(:,9));
 nmat = size(mat_diameter,1);
 map_matid_pos = containers.Map(mat_id', 1:nmat);
 
 % pipes
 pipe_data = fetch(conn, 'select * from pipes');
-pipe_topology = cell2mat(pipe_data(:,1));
+% pipe_topology = cell2mat(pipe_data(:,1));
 mdl.pipe_id = pipe_data(:,2);
 mdl.pipe_desc = pipe_data(:,3);
-pipe_role = pipe_data(:,4);
+% pipe_role = pipe_data(:,4);
 pipe_nodeI = pipe_data(:,5);
 pipe_nodeJ = pipe_data(:,6);
 mdl.len = cell2mat(pipe_data(:,8));
@@ -90,6 +91,11 @@ for i = 1:ne
     mat_pos = map_matid_pos(pipe_mat{i});
     mdl.roughness(i) =  mat_roughness(mat_pos);
     mdl.diameter(i) =  mat_diameter(mat_pos);
+    
+    mdl.efficiency(i) = mat_eff(mat_pos);
+    if pipe_eff(i) > 0 && pipe_eff(i) <= 1
+        mdl.efficiency(i) = pipe_eff(i);
+    end
 end
 
 % ERP
@@ -100,12 +106,12 @@ if isempty(erp_data)
     mdl.erp.closed = [];
     mdl.erp.pressure = [];
     mdl.erp.enabled = [];
-
-else    
+    
+else
     erp_pipe_id = erp_data(:,2);
     erp_pressure = cell2mat(erp_data(:,3));
     erp_closed = cell2mat(erp_data(:,4));
-    erp_dir = cell2mat(erp_data(:,5));
+    % erp_dir = cell2mat(erp_data(:,5));
     erp_enabled = cell2mat(erp_data(:,6));
     nerp = size(erp_pipe_id,1);
     
@@ -128,7 +134,7 @@ valve_data = fetch(conn, 'select * from flow_valves');
 if isempty(valve_data)
     mdl.valve.pipe = [];
     mdl.valve.closed = [];
-
+    
 else
     
     valve_pipe_id = valve_data(:,2);
@@ -141,7 +147,7 @@ else
     for i = 1:nval
         mdl.valve.pipe(i) = map_pipeid_pos(valve_pipe_id{i});
         mdl.valve.closed(i) = valve_closed(i);
-    end 
+    end
 end
 
 % company params
