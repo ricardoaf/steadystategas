@@ -111,7 +111,7 @@ else
     erp_pipe_id = erp_data(:,2);
     erp_pressure = cell2mat(erp_data(:,3));
     erp_closed = cell2mat(erp_data(:,4));
-    % erp_dir = cell2mat(erp_data(:,5));
+    erp_dir = cell2mat(erp_data(:,5));
     erp_enabled = cell2mat(erp_data(:,6));
     nerp = size(erp_pipe_id,1);
     
@@ -119,12 +119,14 @@ else
     mdl.erp.closed = zeros(1, nerp);
     mdl.erp.pressure = zeros(1, nerp);
     mdl.erp.enabled = zeros(1, nerp);
+    mdl.erp.dir = zeros(1, nerp);
     
     for i = 1:nerp
         mdl.erp.pipe(i) = map_pipeid_pos(erp_pipe_id{i});
         mdl.erp.closed(i) = erp_closed(i);
         mdl.erp.pressure(i) = erp_pressure(i);
         mdl.erp.enabled(i) = erp_enabled(i);
+        mdl.erp.dir(i) = erp_dir(i);
     end
 end
 

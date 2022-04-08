@@ -29,6 +29,10 @@ demand = find(mdl.q<-mdl.tolf*max(abs(mdl.q)))'; ndemand = length(demand);
 fprintf('\nDEMANDS\n');
 fprintf('%5s %20s %12s %12s ', 'id', 'desc', 'p [kPa]', 'q [scmh]');
 
+% assuming
+nreal_etc = netc;
+real_etc = etc;
+
 etcid = zeros(1, nreal_etc);
 for i = 1:nreal_etc, id = real_etc(i);
     setc = sprintf('%%ETC-%d', id);

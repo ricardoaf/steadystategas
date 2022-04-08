@@ -20,9 +20,10 @@ function f = laminar(ReL)
 f = 64./ReL;
 
 function f = turbulent(rr, Re)
-f = 0.015*ones(size(Re));
+f = 0.015*ones(size(rr));
 opt = optimoptions('fsolve', 'Display', 'off');
 f = fsolve(@(f) colebrook(f, rr, Re), f, opt);
+asd = 1;
 
 function F = colebrook(f, rr, Re)
 F = 1./sqrt(f) + 2*log10(rr./3.7 + 2.51./(Re.*sqrt(f)));

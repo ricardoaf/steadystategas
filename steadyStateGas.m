@@ -14,25 +14,31 @@ for j = 1:m, A(conn(j,:),j) = [-1; +1]; end
 % convert pressure values
 unit = adjustPressure('convert', flow_eqn, unit);
 
-% process unit data
-[K, unit_c, units, network, alpha, nonetc, X, erpunit, erpconn] = ...
-    processUnitData(n, unit, param);
-[C1, C2, C3, d] = processUnitCoeff (n, unit, unit_c, network);
-X_h = repmat(X(1,:), m, 1);
-
-% inlet / outlet
-KI = K(network, :); KO = K(units, :);
-LI = load(network); LO = load(units);
-
 % branch flow vector (initial guess)
 Q = min(load(load>0))*ones(m,1);
 % Q = max(load)*ones(m, 1);
-err = tol+1; nite = 0; pressure = zeros(n,1);
-lb = 1e-6;
+err = tol+1; nite = 0; pressure = zeros(n,1); f = zeros(u, 1);
+lb = 1e-9;
 
-while err > tol && nite < 1000
+% ERR = [];
+while err > tol && nite < 50
     nite = nite + 1;
-%     fprintf('nite %d\n', nite);
+    % fprintf('nite %d\n', nite);
+    
+    % process unit data
+    [K, C1, C2, C3, d, units, active_unit, network, nonetc, gas, erp] = ...
+        processUnitData(n, unit, param, pressure, f);
+    au = length(units);
+    
+    % inlet / outlet
+    KI = K(network, :); KO = K(units, :);
+    LI = load(network); LO = load(units);
+    
+    % first iteration branch compositions
+    if nite == 1
+        alpha = gas.alpha; X = gas.X;
+        X_h = repmat(X(1,:), m, 1);
+    end
     
     % Linearization of pipe flow equation
     invLbd = diag(1./flow_eqn('Lbd', pressure(conn), Q, X_h, param, nite));
@@ -54,24 +60,23 @@ while err > tol && nite < 1000
     R1 = -LO + TmpG*LI; R2 = d + TmpC*LI;
     
     Pf = [D11 D12; D21 D22]\[R1; R2];
-    P = Pf(1:u); f = Pf(u+1:2*u);    
-    Ps = -invU*(invL*(LI+Gh*P+KI*f));
+    P = Pf(1:au); f(active_unit) = Pf(au+1:2*au);    
+    Ps = -invU*(invL*(LI+Gh*P+KI*f(active_unit)));
     
     pressure(network) = Ps; pressure(units) = P;
     [Qnew, flowProps] = flow_eqn('Q', pressure(conn), Q, X_h, param, nite);
     
-    err = norm(Qnew-Q);
+    dQ = Qnew - Q;
+    err = norm(dQ);
+%     ERR = [ERR err];
     Q = Qnew;
-    
-    % assert pressure valves
-    unit_c = processPressureValve (pressure, unit, unit_c, f);
-    [C1, C2, C3, d] = processUnitCoeff (n, unit, unit_c, network);
-    
+        
     % update gas composition fraction
     [alpha, X_h] = updateComposition ...
-        (alpha, X, A, Q, f, nonetc, conn, erpunit, erpconn, tol);
+        (alpha, X, A, Q, f, nonetc, conn, erp.unit, erp.conn, tol);
 end
-L = A*Q - K*f;
+L = A*Q - K*f(active_unit);
+% plot(ERR);
 
 % revert pressure values
 [~, pressure] = adjustPressure('revert', flow_eqn, unit, pressure);

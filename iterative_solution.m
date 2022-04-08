@@ -10,9 +10,18 @@ flow_eqn = @FPE;
 % define tolerance
 tol = mdl.tolf;
 
+% swap conn form erp pipes with direction=1
+nerp = length(mdl.erp.pipe);
+for k = 1:nerp
+    pipe = mdl.erp.pipe(k);
+    dir = mdl.erp.dir(k);
+    if dir==1
+        mdl.conn(pipe, :) = mdl.conn(pipe, [2 1]);
+    end
+end
+
 % define unit
 netc = length(mdl.etc.node);
-nerp = length(mdl.erp.pipe);
 unit = cell(1,netc+nerp); u = 0;
 for k = 1:netc
     node = mdl.nodal_activity(mdl.etc.node(k));
@@ -27,8 +36,9 @@ for k = 1:nerp
     conn = mdl.nodal_activity(mdl.conn(pipe, :));
     if any(conn==0), continue; end
     pressure = mdl.erp.pressure(k);
+    dir = mdl.erp.dir(k);
     u = u + 1;
-    unit{u} = struct('type','pressure_valve', 'conn',conn, 'value',pressure, 'pipe', pipe);
+    unit{u} = struct('type','pressure_valve', 'conn',conn, 'value',pressure, 'pipe', pipe, 'dir', dir);
     % also inactivate pipe
     mdl.inactive_pipe = unique([mdl.inactive_pipe pipe]);
     mdl.active_pipe = setdiff(1:size(mdl.conn,1), mdl.inactive_pipe);
@@ -56,9 +66,18 @@ param = struct(...
 
 % call solver
 %--------------------------------------------------------------------------
-[pressure, L, Q, f, alpha, flowProps, nite, err] = steadyStateGas ...
+[pressure, L, Q, f, alpha, flowProps, nite, err] = steadyStateGas_old ...
     (conn, load, unit, flow_eqn, param, tol);
 fprintf('[solver] %d ite, err: %g\n', nite, err);
+
+% revert conn form erp pipes with direction=1
+for k = 1:nerp
+    pipe = mdl.erp.pipe(k);
+    dir = mdl.erp.dir(k);
+    if dir==1
+        mdl.conn(pipe, :) = mdl.conn(pipe, [2 1]);
+    end
+end
 
 % add results to model
 %--------------------------------------------------------------------------
