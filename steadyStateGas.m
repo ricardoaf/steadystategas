@@ -20,6 +20,8 @@ Q = min(load(load>0))*ones(m,1);
 err = tol+1; nite = 0; pressure = zeros(n,1); f = zeros(u, 1);
 lb = 1e-9;
 
+lb = 1e-7;
+
 % ERR = [];
 while err > tol && nite < 50
     nite = nite + 1;
@@ -50,8 +52,11 @@ while err > tol && nite < 50
     
     % Gn = Gn + 1e-8 * mean(diag(Gn)) * eye(size(Gn));
     % U = chol(Gn);
-    [U, lb] = chol_lb (Gn, lb);
-    
+
+    % [U, lb] = chol_lb (Gn, lb);
+
+    Gn = Gn + lb * eye(size(Gn));
+
     L = U'; invL = inv(L); invU = inv(U);
     Tmp = invU*invL; TmpG = Gh'*Tmp; TmpC = C1*Tmp;
     
@@ -73,7 +78,7 @@ while err > tol && nite < 50
         
     % update gas composition fraction
     [alpha, X_h] = updateComposition ...
-        (alpha, X, A, Q, f, nonetc, conn, erp.unit, erp.conn, tol);
+        (alpha, X, A, Qnew, f, nonetc, conn, erp.unit, erp.conn, tol);
 end
 L = A*Q - K*f(active_unit);
 % plot(ERR);

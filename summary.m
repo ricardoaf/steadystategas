@@ -9,7 +9,7 @@ fprintf('\nETC\n');
 fprintf('%5s %20s\n', 'id', 'desc');
 fprintf('%s\n', repmat('-',[1 26]));
 for i = 1:netc, id = etc(i);
-    desc = ''; if isfield(mdl, 'node_desc'), desc = mdl.node_desc{id}; end
+    desc = ''; if isfield(mdl, 'node_desc'), desc = str2mat(mdl.node_desc(id)); end
     fprintf('%5d %20s\n', id, desc);
 end
 
@@ -20,7 +20,7 @@ fprintf('%5s %20s %12s %12s\n', 'id', 'desc', 'p [kPa]', 'q [scmh]');
 fprintf('%s\n', repmat('-',[1 52]));
 for i = 1:nreal_etc, id = real_etc(i);
     p = mdl.p(id)*psi2kpa; q = mdl.q(id)*cfd2cmh;
-    desc = ''; if isfield(mdl, 'node_desc'), desc = mdl.node_desc{id}; end
+    desc = ''; if isfield(mdl, 'node_desc'), desc = str2mat(mdl.node_desc(id)); end
     fprintf('%5d %20s %12g %+12.3f\n', id, desc, p, q);
 end
 
@@ -43,7 +43,7 @@ end
 fprintf('\n%s\n', repmat('-',[1 52+12*nreal_etc]));
 for i = 1:ndemand, id = demand(i);
     p = mdl.p(id)*psi2kpa; q = mdl.q(id)*cfd2cmh;
-    desc = ''; if isfield(mdl, 'node_desc'), desc = mdl.node_desc{id}; end
+    desc = ''; if isfield(mdl, 'node_desc'), desc = str2mat(mdl.node_desc(id)); end
     fprintf('%5d %20s %12g %+12.3f ', id, desc, p, q);
     
     fprintf('%11.4f ', mdl.nodal_etc_demand(id, etcid)*100);

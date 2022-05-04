@@ -46,17 +46,21 @@ else
     f = friction (param.r./D, Re);    
     
     flowProps = struct('Re',Re, 'f',f, 'Za',Za);    
-    K = C1*Tb/Pb*(D.^2.5).*e./sqrt(G.*Za.*Ta.*L);
+    
+    m = 2;
+    K = (C1*Tb/Pb*(D.^2.5).*e./sqrt(G.*Za.*Ta.*L.*f)).^-m;
     
     if strcmp(type, 'Lbd')
         % dP = Lbd .* Q  =>  Lbd = |Q|.*f(|Q|)./(K.^2)
-        Lbd = abs(Q).*f./(K.^2);
+        Lbd = K .* abs(Q) .^ (m-1);
+
         varargout = {Lbd, flowProps};
         
     elseif strcmp(type, 'Q')
         % Q = sign(dP) * K * 1/sqrt(f) * sqrt(|dP|)
         dP = P(:,1) - P(:,2);
-        Q = sign(dP) .* K .* sqrt(abs(dP)./f);
+        Q = sign(dP) .* (abs(dP)./K).^(1/m);
+
         varargout = {Q, flowProps};
     end
 end

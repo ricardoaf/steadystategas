@@ -5,26 +5,26 @@ conn = sqlite(dbpath, 'connect');
 
 % nodes
 nodes_data = fetch(conn, 'select * from nodes');
-% topology = cell2mat(nodes_data(:,1));
-mdl.node_id = nodes_data(:,2);
-mdl.node_desc = nodes_data(:,3);
-% node_role = nodes_data(:,4);
-mdl.x = cell2mat(nodes_data(:,6));
-mdl.y = cell2mat(nodes_data(:,5));
+% topology = table2array(nodes_data(:,1));
+mdl.node_id = table2array(nodes_data(:,2));
+mdl.node_desc = table2array(nodes_data(:,3));
+% node_role = table2array(nodes_data(:,4));
+mdl.x = table2array(nodes_data(:,6));
+mdl.y = table2array(nodes_data(:,5));
 nn = length(mdl.x);
 map_nodeid_pos = containers.Map(mdl.node_id', 1:nn);
 
 % composition data
 composition_data = fetch(conn, 'select * from gas_composition_data');
-gas_id = composition_data(:,1);
-mdl.gas = cell2mat(composition_data(:,2:end));
+gas_id = table2array(composition_data(:,1));
+mdl.gas = table2array(composition_data(:,2:end));
 ngas = size(mdl.gas,1);
 map_gasid_pos = containers.Map(gas_id', 1:ngas);
 
 % suppliers
 suppliers_data = fetch(conn, 'select * from suppliers');
-supplier_node_id = suppliers_data(:,2);
-supplier_gas_id = suppliers_data(:,3);
+supplier_node_id = table2array(suppliers_data(:,2));
+supplier_gas_id = table2array(suppliers_data(:,3));
 netc = size(supplier_gas_id, 1);
 
 mdl.etc.node = zeros(1, netc);
@@ -36,8 +36,8 @@ end
 
 % flow data
 flow_data = fetch(conn, 'select * from nodal_flow_data');
-flow_node_id = flow_data(:,2);
-flow_values = cell2mat(flow_data(:,3));
+flow_node_id = table2array(flow_data(:,2));
+flow_values = table2array(flow_data(:,3));
 mdl.q = zeros(nn,1);
 for i = 1:size(flow_values,1)
     pos = map_nodeid_pos(flow_node_id{i});
@@ -46,8 +46,8 @@ end
 
 % pressure data
 pressure_data = fetch(conn, 'select * from nodal_pressure_data');
-pressure_node_id = pressure_data(:,2);
-pressure_values = cell2mat(pressure_data(:,3));
+pressure_node_id = table2array(pressure_data(:,2));
+pressure_values = table2array(pressure_data(:,3));
 mdl.p = zeros(nn,1);
 for i = 1:size(pressure_values,1)
     pos = map_nodeid_pos(pressure_node_id{i});
@@ -56,24 +56,24 @@ end
 
 % materials
 mat_data = fetch(conn, 'select * from materials');
-mat_id = mat_data(:,1);
-mat_roughness = cell2mat(mat_data(:,3));
-mat_diameter = cell2mat(mat_data(:,5));
-mat_eff = cell2mat(mat_data(:,9));
+mat_id = table2array(mat_data(:,1));
+mat_roughness = table2array(mat_data(:,3));
+mat_diameter = table2array(mat_data(:,5));
+mat_eff = table2array(mat_data(:,9));
 nmat = size(mat_diameter,1);
 map_matid_pos = containers.Map(mat_id', 1:nmat);
 
 % pipes
 pipe_data = fetch(conn, 'select * from pipes');
-% pipe_topology = cell2mat(pipe_data(:,1));
-mdl.pipe_id = pipe_data(:,2);
-mdl.pipe_desc = pipe_data(:,3);
-% pipe_role = pipe_data(:,4);
-pipe_nodeI = pipe_data(:,5);
-pipe_nodeJ = pipe_data(:,6);
-mdl.len = cell2mat(pipe_data(:,8));
-pipe_mat = pipe_data(:,9);
-pipe_eff = cell2mat(pipe_data(:,11));
+% pipe_topology = table2array(pipe_data(:,1));
+mdl.pipe_id = table2array(pipe_data(:,2));
+mdl.pipe_desc = table2array(pipe_data(:,3));
+% pipe_role = table2array(pipe_data(:,4));
+pipe_nodeI = table2array(pipe_data(:,5));
+pipe_nodeJ = table2array(pipe_data(:,6));
+mdl.len = table2array(pipe_data(:,8));
+pipe_mat = table2array(pipe_data(:,9));
+pipe_eff = table2array(pipe_data(:,11));
 ne = size(pipe_nodeI,1);
 map_pipeid_pos = containers.Map(mdl.pipe_id', 1:ne);
 
@@ -108,11 +108,11 @@ if isempty(erp_data)
     mdl.erp.enabled = [];
     
 else
-    erp_pipe_id = erp_data(:,2);
-    erp_pressure = cell2mat(erp_data(:,3));
-    erp_closed = cell2mat(erp_data(:,4));
-    erp_dir = cell2mat(erp_data(:,5));
-    erp_enabled = cell2mat(erp_data(:,6));
+    erp_pipe_id = table2array(erp_data(:,2));
+    erp_pressure = table2array(erp_data(:,3));
+    erp_closed = table2array(erp_data(:,4));
+    erp_dir = table2array(erp_data(:,5));
+    erp_enabled = table2array(erp_data(:,6));
     nerp = size(erp_pipe_id,1);
     
     mdl.erp.pipe = zeros(1, nerp);
@@ -139,8 +139,8 @@ if isempty(valve_data)
     
 else
     
-    valve_pipe_id = valve_data(:,2);
-    valve_closed = cell2mat(valve_data(:,3));
+    valve_pipe_id = table2array(valve_data(:,2));
+    valve_closed = table2array(valve_data(:,3));
     nval = size(valve_pipe_id,1);
     
     mdl.valve.pipe = zeros(1, nval);
@@ -162,11 +162,11 @@ if isempty(company_params)
     mdl.visc = 2.5e-7;
     
 else
-    mdl.Patm = cell2mat(company_params(1,1));
-    mdl.Tb = cell2mat(company_params(1,2));
-    mdl.Pb = cell2mat(company_params(1,3));
-    mdl.Ta = cell2mat(company_params(1,4));
-    mdl.visc = cell2mat(company_params(1,5));
+    mdl.Patm = table2array(company_params(1,1));
+    mdl.Tb = table2array(company_params(1,2));
+    mdl.Pb = table2array(company_params(1,3));
+    mdl.Ta = table2array(company_params(1,4));
+    mdl.visc = table2array(company_params(1,5));
 end
 
 % global parameters
@@ -178,7 +178,7 @@ if isempty(nr_gp)
     mdl.maxiter = 10000;
     
 else
-    mdl.tolx = cell2mat(nr_gp(1,1));
-    mdl.tolf = cell2mat(nr_gp(1,2));
-    mdl.maxiter = cell2mat(nr_gp(1,3));
+    mdl.tolx = table2array(nr_gp(1,1));
+    mdl.tolf = table2array(nr_gp(1,2));
+    mdl.maxiter = table2array(nr_gp(1,3));
 end
