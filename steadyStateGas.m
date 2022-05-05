@@ -18,9 +18,8 @@ unit = adjustPressure('convert', flow_eqn, unit);
 Q = min(load(load>0))*ones(m,1);
 % Q = max(load)*ones(m, 1);
 err = tol+1; nite = 0; pressure = zeros(n,1); f = zeros(u, 1);
-lb = 1e-9;
-
-lb = 1e-7;
+% lb = 1e-9;
+lb = 1e-8;
 
 % ERR = [];
 while err > tol && nite < 50
@@ -58,8 +57,9 @@ while err > tol && nite < 50
     Gn = Gn + lb * eye(size(Gn));
     U = chol(Gn);
 
-    L = U'; invL = inv(L); invU = inv(U);
-    Tmp = invU*invL; TmpG = Gh'*Tmp; TmpC = C1*Tmp;
+    L = U';
+    Tmp = U\(L\eye(size(L)));
+    TmpG = Gh'*Tmp; TmpC = C1*Tmp;
     
     D11 = Gs - TmpG*Gh; D12 = KO - TmpG*KI;
     D21 = C2 - TmpC*Gh; D22 = C3 - TmpC*KI;
@@ -67,19 +67,21 @@ while err > tol && nite < 50
     
     Pf = [D11 D12; D21 D22]\[R1; R2];
     P = Pf(1:au); f(active_unit) = Pf(au+1:2*au);    
-    Ps = -invU*(invL*(LI+Gh*P+KI*f(active_unit)));
-    
+    Ps = -U\(L\(LI+Gh*P+KI*f(active_unit)));
+
     pressure(network) = Ps; pressure(units) = P;
-    [Qnew, flowProps] = flow_eqn('Q', pressure(conn), Q, X_h, param, nite);
+    [Qnew, flowProps] = flow_eqn('Q', pressure(conn), Q, X_h, param, nite);    
     
     dQ = Qnew - Q;
     err = norm(dQ);
 %     ERR = [ERR err];
     Q = Qnew;
-        
+
     % update gas composition fraction
     [alpha, X_h] = updateComposition ...
         (alpha, X, A, Qnew, f, nonetc, conn, erp.unit, erp.conn, tol);
+
+    asd = 1;
 end
 L = A*Q - K*f(active_unit);
 % plot(ERR);

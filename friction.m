@@ -21,7 +21,8 @@ f = 64./ReL;
 
 function f = turbulent(rr, Re)
 f = 0.015*ones(size(rr));
-opt = optimoptions('fsolve', 'Display', 'off');
+opt = optimoptions('fsolve', 'Display', 'off', ...
+    'FunctionTolerance', 1e-6, 'StepTolerance', 1e-12);
 f = fsolve(@(f) colebrook(f, rr, Re), f, opt);
 asd = 1;
 

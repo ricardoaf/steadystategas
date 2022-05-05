@@ -48,7 +48,7 @@ else
     flowProps = struct('Re',Re, 'f',f, 'Za',Za);    
     
     m = 2;
-    K = (C1*Tb/Pb*(D.^2.5).*e./sqrt(G.*Za.*Ta.*L.*f)).^-m;
+    K = (C1*Tb/Pb*(D.^2.5).*e./sqrt(G.*Za.*Ta.*L.*f)).^(-m);
     
     if strcmp(type, 'Lbd')
         % dP = Lbd .* Q  =>  Lbd = |Q|.*f(|Q|)./(K.^2)
