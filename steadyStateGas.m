@@ -56,6 +56,7 @@ while err > tol && nite < 50
     % [U, lb] = chol_lb (Gn, lb);
 
     Gn = Gn + lb * eye(size(Gn));
+    U = chol(Gn);
 
     L = U'; invL = inv(L); invU = inv(U);
     Tmp = invU*invL; TmpG = Gh'*Tmp; TmpC = C1*Tmp;
